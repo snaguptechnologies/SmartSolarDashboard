@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>Smart Solar Panel Monitor</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+
+    margin:0;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background:#07111f;
+
+    color:#e8f1ff;
+}
+
+
+.sidebar{
+
+    position:fixed;
+
+    left:0;
+    top:0;
+
+    width:230px;
+
+    height:100vh;
+
+    background:#0b1829;
+
+    border-right:
+        1px solid #1b3048;
+
+    padding:25px;
+}
+
+
+.logo{
+
+    font-size:22px;
+
+    font-weight:bold;
+
+    margin-bottom:35px;
+}
+
+
+.logo span{
+
+    color:#35d4ff;
+}
+
+
+.menu{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:14px;
+}
+
+
+.menu div{
+
+    padding:12px;
+
+    border-radius:8px;
+
+    color:#8fa7c2;
+}
+
+
+.menu div.active{
+
+    background:#12304a;
+
+    color:#35d4ff;
+}
+
+
+.main{
+
+    margin-left:230px;
+
+    padding:25px;
+}
+
+
+.header{
+
+    display:flex;
+
+    justify-content:
+        space-between;
+
+    align-items:center;
+
+    margin-bottom:25px;
+}
+
+
+.title{
+
+    font-size:28px;
+
+    font-weight:bold;
+}
+
+
+.subtitle{
+
+    color:#8fa7c2;
+
+    margin-top:5px;
+}
+
+
+.status{
+
+    padding:10px 18px;
+
+    border-radius:20px;
+
+    background:#12304a;
+
+    color:#35e59a;
+
+    font-weight:bold;
+}
+
+
+.cards{
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap:18px;
+
+    margin-bottom:20px;
+}
+
+
+.card{
+
+    background:#0d1c2e;
+
+    border:
+        1px solid #1a3149;
+
+    border-radius:14px;
+
+    padding:20px;
+}
+
+
+.card-title{
+
+    color:#8fa7c2;
+
+    font-size:14px;
+
+    margin-bottom:12px;
+}
+
+
+.value{
+
+    font-size:30px;
+
+    font-weight:bold;
+}
+
+
+.unit{
+
+    font-size:14px;
+
+    color:#7f96ae;
+}
+
+
+.grid{
+
+    display:grid;
+
+    grid-template-columns:
+        2fr 1fr;
+
+    gap:18px;
+}
+
+
+.chart-card{
+
+    background:#0d1c2e;
+
+    border:
+        1px solid #1a3149;
+
+    border-radius:14px;
+
+    padding:20px;
+}
+
+
+.chart-title{
+
+    font-size:18px;
+
+    font-weight:bold;
+
+    margin-bottom:15px;
+}
+
+
+.chart-container{
+
+    height:330px;
+}
+
+
+.health{
+
+    text-align:center;
+
+    padding:20px;
+}
+
+
+.health-circle{
+
+    width:170px;
+
+    height:170px;
+
+    border-radius:50%;
+
+    border:12px solid #35d4ff;
+
+    margin:
+        15px auto;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    align-items:center;
+}
+
+
+.health-score{
+
+    font-size:40px;
+
+    font-weight:bold;
+}
+
+
+.health-status{
+
+    font-size:16px;
+
+    color:#35e59a;
+}
+
+
+.alerts{
+
+    margin-top:20px;
+}
+
+
+.alert{
+
+    background:#13263a;
+
+    border-left:
+        4px solid #ffb84d;
+
+    padding:12px;
+
+    margin-bottom:10px;
+
+    border-radius:6px;
+
+    color:#c8d7e8;
+}
+
+
+.sensor-grid{
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap:15px;
+
+    margin-top:20px;
+}
+
+
+.sensor{
+
+    background:#102238;
+
+    padding:15px;
+
+    border-radius:10px;
+}
+
+
+.sensor-name{
+
+    color:#8fa7c2;
+
+    font-size:13px;
+}
+
+
+.sensor-value{
+
+    margin-top:6px;
+
+    font-size:22px;
+
+    font-weight:bold;
+}
+
+
+.servo{
+
+    margin-top:20px;
+
+    padding:15px;
+
+    border-radius:10px;
+
+    background:#102238;
+}
+
+
+@media(max-width:1000px){
+
+    .sidebar{
+
+        display:none;
+    }
+
+    .main{
+
+        margin-left:0;
+    }
+
+    .cards{
+
+        grid-template-columns:
+            repeat(2,1fr);
+    }
+
+    .grid{
+
+        grid-template-columns:1fr;
+    }
+}
+
+
+@media(max-width:600px){
+
+    .cards{
+
+        grid-template-columns:1fr;
+    }
+
+    .sensor-grid{
+
+        grid-template-columns:1fr;
+    }
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- ================================================= -->
+<!-- SIDEBAR -->
+<!-- ================================================= -->
+
+<div class="sidebar">
+
+    <div class="logo">
+
+        ☀ Smart
+        <span>Solar</span>
+
+    </div>
+
+
+    <div class="menu">
+
+        <div class="active">
+            Dashboard
+        </div>
+
+        <div>
+            Panel Health
+        </div>
+
+        <div>
+            Sensor Data
+        </div>
+
+        <div>
+            Cleaning System
+        </div>
+
+        <div>
+            AI Analysis
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================================================= -->
+<!-- MAIN -->
+<!-- ================================================= -->
+
+<div class="main">
+
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <div>
+
+            <div class="title">
+                Solar Panel Monitoring
+            </div>
+
+            <div class="subtitle">
+                IoT + AI/ML Smart Panel Health System
+            </div>
+
+        </div>
+
+
+        <div
+            id="systemStatus"
+            class="status"
+        >
+            CONNECTING...
+        </div>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- SENSOR CARDS -->
+    <!-- ================================================= -->
+
+    <div class="cards">
+
+
+        <div class="card">
+
+            <div class="card-title">
+                SOLAR VOLTAGE
+            </div>
+
+            <div class="value">
+
+                <span id="voltage">
+                    --
+                </span>
+
+                <span class="unit">
+                    V
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                CURRENT
+            </div>
+
+            <div class="value">
+
+                <span id="current">
+                    --
+                </span>
+
+                <span class="unit">
+                    A
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                POWER
+            </div>
+
+            <div class="value">
+
+                <span id="power">
+                    --
+                </span>
+
+                <span class="unit">
+                    W
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                DUST LEVEL
+            </div>
+
+            <div class="value">
+
+                <span id="dust">
+                    --
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- SECONDARY DATA -->
+    <!-- ================================================= -->
+
+    <div class="cards">
+
+
+        <div class="card">
+
+            <div class="card-title">
+                TEMPERATURE
+            </div>
+
+            <div class="value">
+
+                <span id="temperature">
+                    --
+                </span>
+
+                <span class="unit">
+                    °C
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                HUMIDITY
+            </div>
+
+            <div class="value">
+
+                <span id="humidity">
+                    --
+                </span>
+
+                <span class="unit">
+                    %
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                CLEANING SERVO
+            </div>
+
+            <div class="value">
+
+                <span id="servo">
+                    --
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                LAST UPDATE
+            </div>
+
+            <div
+                id="lastUpdate"
+                class="value"
+                style="font-size:18px"
+            >
+                --
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- CHART + HEALTH -->
+    <!-- ================================================= -->
+
+    <div class="grid">
+
+
+        <!-- CHART -->
+
+        <div class="chart-card">
+
+            <div class="chart-title">
+                Solar Power Performance
+            </div>
+
+
+            <div class="chart-container">
+
+                <canvas
+                    id="powerChart"
+                ></canvas>
+
+            </div>
+
+        </div>
+
+
+        <!-- HEALTH -->
+
+        <div class="chart-card">
+
+            <div class="chart-title">
+                Panel Health
+            </div>
+
+
+            <div class="health">
+
+                <div class="health-circle">
+
+                    <div
+                        id="healthScore"
+                        class="health-score"
+                    >
+                        --
+                    </div>
+
+                    <div class="unit">
+                        / 100
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="healthStatus"
+                    class="health-status"
+                >
+                    ANALYZING
+                </div>
+
+
+                <div class="alerts">
+
+                    <div
+                        id="alerts"
+                    ></div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- AI ANALYSIS -->
+    <!-- ================================================= -->
+
+    <div class="chart-card" style="margin-top:20px">
+
+        <div class="chart-title">
+            AI / ML Panel Analysis
+        </div>
+
+
+        <div class="sensor-grid">
+
+
+            <div class="sensor">
+
+                <div class="sensor-name">
+                    PANEL CONDITION
+                </div>
+
+                <div
+                    id="condition"
+                    class="sensor-value"
+                >
+                    --
+                </div>
+
+            </div>
+
+
+            <div class="sensor">
+
+                <div class="sensor-name">
+                    DUST ANALYSIS
+                </div>
+
+                <div
+                    id="dustAnalysis"
+                    class="sensor-value"
+                >
+                    --
+                </div>
+
+            </div>
+
+
+            <div class="sensor">
+
+                <div class="sensor-name">
+                    POWER ANALYSIS
+                </div>
+
+                <div
+                    id="powerAnalysis"
+                    class="sensor-value"
+                >
+                    --
+                </div>
+
+            </div>
+
+
+            <div class="sensor">
+
+                <div class="sensor-name">
+                    TEMPERATURE ANALYSIS
+                </div>
+
+                <div
+                    id="temperatureAnalysis"
+                    class="sensor-value"
+                >
+                    --
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+// =====================================================
+// CHART
+// =====================================================
+
+const ctx =
+    document
+        .getElementById(
+            "powerChart"
+        )
+        .getContext("2d");
+
+
+const powerChart =
+    new Chart(
+        ctx,
+        {
+
+            type:
+                "line",
+
+            data:
+            {
+
+                labels: [],
+
+                datasets:
+                [
+
+                    {
+
+                        label:
+                            "Power (W)",
+
+                        data: [],
+
+                        tension:
+                            0.35,
+
+                        borderWidth:
+                            2,
+
+                        pointRadius:
+                            2
+
+                    }
+
+                ]
+
+            },
+
+            options:
+            {
+
+                responsive:
+                    true,
+
+                maintainAspectRatio:
+                    false,
+
+                scales:
+                {
+
+                    x:
+                    {
+                        ticks:
+                        {
+                            color:
+                                "#8fa7c2"
+                        }
+                    },
+
+                    y:
+                    {
+                        ticks:
+                        {
+                            color:
+                                "#8fa7c2"
+                        }
+                    }
+
+                }
+
+            }
+
+        }
+    );
+
+
+// =====================================================
+// UPDATE DASHBOARD
+// =====================================================
+
+async function updateDashboard()
+{
+
+    try
+    {
+
+        const response =
+            await fetch(
+                "/api/data"
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            !data.online
+        )
+        {
+
+            document
+                .getElementById(
+                    "systemStatus"
+                )
+                .innerText =
+                    "ESP32 OFFLINE";
+
+            return;
+
+        }
+
+
+        // =================================================
+        // BASIC VALUES
+        // =================================================
+
+        document
+            .getElementById(
+                "voltage"
+            )
+            .innerText =
+                data.voltage.toFixed(2);
+
+
+        document
+            .getElementById(
+                "current"
+            )
+            .innerText =
+                data.current.toFixed(3);
+
+
+        document
+            .getElementById(
+                "power"
+            )
+            .innerText =
+                data.power.toFixed(2);
+
+
+        document
+            .getElementById(
+                "dust"
+            )
+            .innerText =
+                Math.round(
+                    data.dust
+                );
+
+
+        document
+            .getElementById(
+                "temperature"
+            )
+            .innerText =
+                data.temperature.toFixed(1);
+
+
+        document
+            .getElementById(
+                "humidity"
+            )
+            .innerText =
+                data.humidity.toFixed(1);
+
+
+        // =================================================
+        // SERVO
+        // =================================================
+
+        document
+            .getElementById(
+                "servo"
+            )
+            .innerText =
+                data.servo === 1
+                    ? "CLEANING"
+                    : "OFF";
+
+
+        // =================================================
+        // SYSTEM STATUS
+        // =================================================
+
+        document
+            .getElementById(
+                "systemStatus"
+            )
+            .innerText =
+                data.data_status;
+
+
+        // =================================================
+        // HEALTH
+        // =================================================
+
+        const health =
+            data.analysis.score;
+
+
+        document
+            .getElementById(
+                "healthScore"
+            )
+            .innerText =
+                health;
+
+
+        document
+            .getElementById(
+                "healthStatus"
+            )
+            .innerText =
+                data.analysis.status;
+
+
+        document
+            .getElementById(
+                "condition"
+            )
+            .innerText =
+                data.analysis.status;
+
+
+        // =================================================
+        // ANALYSIS
+        // =================================================
+
+        let dustText =
+            "Normal";
+
+
+        if (
+            data.dust > 2000
+        )
+        {
+            dustText =
+                "High Dust";
+        }
+        else if (
+            data.dust > 1000
+        )
+        {
+            dustText =
+                "Moderate Dust";
+        }
+
+
+        document
+            .getElementById(
+                "dustAnalysis"
+            )
+            .innerText =
+                dustText;
+
+
+        let powerText =
+            "Normal";
+
+
+        if (
+            data.voltage > 1 &&
+            data.power < 0.2
+        )
+        {
+            powerText =
+                "Low Generation";
+        }
+
+
+        document
+            .getElementById(
+                "powerAnalysis"
+            )
+            .innerText =
+                powerText;
+
+
+        let temperatureText =
+            "Normal";
+
+
+        if (
+            data.temperature > 70
+        )
+        {
+            temperatureText =
+                "Critical";
+        }
+        else if (
+            data.temperature > 55
+        )
+        {
+            temperatureText =
+                "High";
+        }
+
+
+        document
+            .getElementById(
+                "temperatureAnalysis"
+            )
+            .innerText =
+                temperatureText;
+
+
+        // =================================================
+        // ALERTS
+        // =================================================
+
+        const alerts =
+            document
+                .getElementById(
+                    "alerts"
+                );
+
+
+        alerts.innerHTML = "";
+
+
+        data.analysis.reasons
+            .forEach(
+                reason =>
+                {
+
+                    const div =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    div.className =
+                        "alert";
+
+
+                    div.innerText =
+                        "⚠ " +
+                        reason;
+
+
+                    alerts.appendChild(
+                        div
+                    );
+
+                }
+            );
+
+
+        // =================================================
+        // LAST UPDATE
+        // =================================================
+
+        if (
+            data.timestamp
+        )
+        {
+
+            const date =
+                new Date(
+                    data.timestamp
+                );
+
+
+            document
+                .getElementById(
+                    "lastUpdate"
+                )
+                .innerText =
+                    date.toLocaleTimeString();
+
+        }
+
+
+        // =================================================
+        // CHART
+        // =================================================
+
+        powerChart.data.labels =
+            data.history.map(
+                item =>
+                {
+
+                    const d =
+                        new Date(
+                            item.time
+                        );
+
+                    return d.toLocaleTimeString();
+
+                }
+            );
+
+
+        powerChart.data.datasets[0].data =
+            data.history.map(
+                item =>
+                    item.power
+            );
+
+
+        powerChart.update();
+
+    }
+
+    catch(error)
+    {
+
+        console.error(
+            error
+        );
+
+
+        document
+            .getElementById(
+                "systemStatus"
+            )
+            .innerText =
+                "DASHBOARD ERROR";
+
+    }
+
+}
+
+
+// =====================================================
+// START
+// =====================================================
+
+updateDashboard();
+
+
+// Update every 20 seconds
+
+setInterval(
+    updateDashboard,
+    20000
+);
+
+</script>
+
+</body>
+
+</html>
